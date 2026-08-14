@@ -81,20 +81,24 @@ exposes the standard ROS master port. ROS 1 communication also depends on
 
 ### Configuring the Container Environment
 
-Inside the Docker container, I added the following settings to the container
-user's `~/.bashrc`. These settings configure the ROS 1 master connection, ROS 2
-DDS behavior, and the hostname used for the Fetch robot:
+The Docker run script passes the following settings into the container at
+creation time. These settings configure the ROS 1 master connection and ROS 2
+DDS behavior. The defaults match the current Fetch network:
 
 ```bash
-export ROS_MASTER_URI=http://192.168.50.130:11311
-export ROS_IP=192.168.50.59
-export ROS_DOMAIN_ID=0
-export ROS_LOCALHOST_ONLY=0
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ROS_MASTER_URI=http://192.168.50.130:11311
+ROS_IP=192.168.50.59
+ROS_DOMAIN_ID=0
+ROS_LOCALHOST_ONLY=0
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
 
-echo "ROS_MASTER_URI=$ROS_MASTER_URI"
-echo "ROS_IP=$ROS_IP"
-echo "192.168.50.130 fetch25" | sudo tee -a /etc/hosts
+The Fetch hostname is added with Docker's `--add-host` option, so no manual
+edit of `/etc/hosts` or repeated `sudo tee` command is required. For a different
+network, override the values before creating the container, for example:
+
+```bash
+ROS_IP=192.168.50.60 make noetic.create
 ```
 
 ### Building the Docker Image

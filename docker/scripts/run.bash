@@ -6,6 +6,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FETCH_WS_ROOT="${FETCH_WS_ROOT:-$REPO_ROOT}"
 
+# Runtime ROS network settings. Values supplied by the host environment take
+# precedence; these defaults match the current Fetch network.
+FETCH_ROS_MASTER_URI="${ROS_MASTER_URI:-http://192.168.50.130:11311}"
+FETCH_ROS_IP="${ROS_IP:-192.168.50.59}"
+FETCH_ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
+FETCH_ROS_LOCALHOST_ONLY="${ROS_LOCALHOST_ONLY:-0}"
+FETCH_RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
+FETCH_ROBOT_HOSTNAME="${FETCH_ROBOT_HOSTNAME:-fetch25}"
+FETCH_ROBOT_IP="${FETCH_ROBOT_IP:-192.168.50.130}"
+
+DOCKER_ROS_ENV_ARGS="--env ROS_MASTER_URI=$FETCH_ROS_MASTER_URI \
+    --env ROS_IP=$FETCH_ROS_IP \
+    --env ROS_DOMAIN_ID=$FETCH_ROS_DOMAIN_ID \
+    --env ROS_LOCALHOST_ONLY=$FETCH_ROS_LOCALHOST_ONLY \
+    --env RMW_IMPLEMENTATION=$FETCH_RMW_IMPLEMENTATION"
+
 # Variables required for logging as a user with the same id as the user running this script
 export LOCAL_USER_ID=`id -u $USER`
 export LOCAL_GROUP_ID=`id -g $USER`
@@ -86,6 +102,8 @@ fi
 
 echo "Container name: $CONTAINER_NAME"
 echo "Volumes to mount: $VOLUME_COMMANDS"
+echo "ROS_MASTER_URI=$FETCH_ROS_MASTER_URI"
+echo "ROS_IP=$FETCH_ROS_IP"
 
 # Create the workspace mount points before Docker starts. This avoids Docker
 # creating missing directories as root on a fresh checkout.
@@ -123,8 +141,10 @@ $DOCKER_COMMAND -it -d\
     $DOCKER_NETWORK_ARGS \
     $ADDITIONAL_COMMANDS \
     $MEMORY_LIMIT \
+    $DOCKER_ROS_ENV_ARGS \
     --privileged \
     -p 11311:11311 \
+    --add-host "$FETCH_ROBOT_HOSTNAME:$FETCH_ROBOT_IP" \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /var/run/docker.sock:/var/run/docker.sock \
