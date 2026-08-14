@@ -15,97 +15,13 @@ The main purpose of this setup is to isolate ROS 1 Noetic from the host system. 
 - Target robot: Fetch
 - Host architecture: x86_64 Linux
 
-### Customizing `Dockerfile.noetic`
-
-I customized `Dockerfile.noetic` based on the `althack/ros:noetic-full` image.
-The customization includes refreshing the ROS archive key, installing the
-development tools and ROS packages required for this project, adding Gazebo
-Classic support, and preparing the `/workspace` directory for the ROS 1
-workspace.
-
-The resulting `Dockerfile.noetic` is:
-
-```dockerfile
-FROM althack/ros:noetic-full
-LABEL maintainer="Emiliano Flores <joemilianofm@gmail.com>"
-
-# The base image contains an expired ROS archive signing key. Bootstrap the
-# current keyring before running apt-get update against packages.ros.org.
-RUN rm -f /etc/apt/sources.list.d/ros*.list && \
-    apt-get update -qq && \
-    apt-get install -y --no-install-recommends ca-certificates curl gnupg && \
-    curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
-      | gpg --dearmor --yes -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros/ubuntu focal main" \
-      > /etc/apt/sources.list.d/ros1.list
-
-# Install dependencies and additional ROS tools.
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    ffmpeg libsm6 libxext6 autoconf libtool mesa-utils \
-    terminator nano git wget curl iputils-ping \
-    libcanberra-gtk-module libcanberra-gtk3-module \
-    ros-dev-tools python3-catkin-tools python3-vcstool python3-tk \
-    net-tools \
-    ros-noetic-teleop-twist-keyboard \
-    ros-noetic-moveit ros-noetic-navigation
-
-# Gazebo Classic packages are provided by the ROS/Ubuntu repositories. The
-# old get.gazebosim.org bootstrap script is deprecated and exits with failure.
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends \
-    ros-noetic-gazebo-ros-pkgs \
-    ros-noetic-gazebo-ros \
-    ros-noetic-gazebo-plugins
-
-RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-RUN mkdir /workspace
-RUN chown -R ros:ros /workspace
-
-ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
-```
-
-### Exposing the ROS Master Port
-
-To make the ROS 1 master port accessible from outside the container, I added
-the following port mapping to the `DOCKER_COMMAND` in `run.bash`:
-
-```bash
--p 11311:11311
-```
-
-This maps port `11311` on the host to port `11311` inside the container and
-exposes the standard ROS master port. ROS 1 communication also depends on
-`ROS_MASTER_URI`, `ROS_IP`, and the container network configuration.
-
-### Configuring the Container Environment
-
-The Docker run script passes the following settings into the container at
-creation time. These settings configure the ROS 1 master connection and ROS 2
-DDS behavior. The defaults match the current Fetch network:
-
-```bash
-ROS_MASTER_URI=http://192.168.50.130:11311
-ROS_IP=192.168.50.59
-ROS_DOMAIN_ID=0
-ROS_LOCALHOST_ONLY=0
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-```
-
-The Fetch hostname is added with Docker's `--add-host` option, so no manual
-edit of `/etc/hosts` or repeated `sudo tee` command is required. For a different
-network, override the values before creating the container, for example:
-
-```bash
-ROS_IP=192.168.50.60 make noetic.create
-```
-
 ### Building the Docker Image
 
 The Docker configuration from `ros-docker` is now included in this repository
 under `docker/`, together with the root `Makefile`. From the repository root, I
-built the ROS Noetic Docker image:
+built the ROS Noetic Docker image. The image definition is in
+`docker/Dockerfile.noetic`, and runtime settings are handled by
+`docker/scripts/run.bash`:
 
 ```bash
 make noetic.build
@@ -120,8 +36,6 @@ make noetic.create
 This command creates and starts the container. If the container already exists
 but is stopped, it can be started with:
 
-The container can be started with:
-
 ```bash
 make noetic.up
 ```
@@ -135,6 +49,10 @@ make noetic.shell
 The Docker run script derives the repository root from its own location, so it
 does not depend on the original `/home/a/fetch_moveit_ws` path. The ROS 1,
 ROS 2, and `ros1_bridge` workspaces are mounted from the current checkout.
+Missing mount directories are created automatically on the first
+`make noetic.create`. The ROS 2 Humble and `ros1_bridge` build steps below are
+still required once on a new machine because their source and build outputs are
+not stored in Git.
 
 ### Installing ROS 2 Humble from Source in the Docker Container
 

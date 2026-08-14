@@ -1,11 +1,6 @@
 #!/bin/bash
 # Use Dockerfile according to NVIDIA GPU and CUDA availability
 
-# Resolve paths from this script location so the script also works when called
-# outside the repository root.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-
 # Receive ROS version from command line, through the --ros-distro argument
 for i in "$@"
 do
@@ -69,18 +64,18 @@ if [ -z "$ROS_DISTRO" ]; then
     exit 1
 fi
 
-DOCKER_FILE="$REPO_ROOT/docker/Dockerfile.${ROS_DISTRO}"
+DOCKER_FILE="$PWD/docker/Dockerfile.${ROS_DISTRO}"
 IMAGE_NAME="emilianh/ros-$ROS_DISTRO"
 echo "Building for docker distro: $ROS_DISTRO"
 
 if [ -n "$USE_CUDA" ]; then
-    DOCKER_FILE="$REPO_ROOT/docker/Dockerfile.${ROS_DISTRO}.cuda"
+    DOCKER_FILE="$PWD/docker/Dockerfile.${ROS_DISTRO}.cuda"
     IMAGE_NAME="emilianh/ros-$ROS_DISTRO-cuda"
     echo "CUDA Docker image: $CUDA_IMAGE"
 fi
 
 if [ -n "$L4T_VERSION" ]; then
-    DOCKER_FILE="$REPO_ROOT/docker/Dockerfile.${ROS_DISTRO}.l4t${L4T_VERSION}"
+    DOCKER_FILE="$PWD/docker/Dockerfile.${ROS_DISTRO}.l4t${L4T_VERSION}"
     IMAGE_NAME="emilianh/ros-$ROS_DISTRO-l4t${L4T_VERSION}"
     echo "Using L4T $L4T_VERSION"
 fi
@@ -95,4 +90,4 @@ echo "Building image: $IMAGE_NAME"
 echo "Using Dockerfile: $DOCKER_FILE"
 
 docker build -t $IMAGE_NAME \
-    -f "$DOCKER_FILE" "$REPO_ROOT" --build-arg USER_UID=$USER_UID --build-arg USER_GID=$USER_GID --build-arg CUDA_IMAGE=$CUDA_IMAGE
+    -f $DOCKER_FILE $PWD --build-arg USER_UID=$USER_UID --build-arg USER_GID=$USER_GID --build-arg CUDA_IMAGE=$CUDA_IMAGE
