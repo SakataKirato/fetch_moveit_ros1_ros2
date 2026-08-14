@@ -1,0 +1,37 @@
+<launch>
+  <arg name="action_name" default="/arm_controller/follow_joint_trajectory" />
+  <arg name="gripper_action_name" default="/gripper_controller/gripper_action" />
+  <arg name="dry_run" default="true" />
+  <arg name="server_wait_timeout" default="5.0" />
+  <arg name="result_wait_timeout" default="30.0" />
+
+  <!-- ROS 1 arm action client. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="fetch_action_relay_ros1.py"
+        name="fetch_action_relay_ros1"
+        output="screen">
+    <param name="action_name" value="$(arg action_name)" />
+    <param name="dry_run" value="$(arg dry_run)" />
+    <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
+    <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
+  </node>
+
+  <!-- ROS 1 gripper action client. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="fetch_gripper_relay_ros1.py"
+        name="fetch_gripper_relay_ros1"
+        output="screen">
+    <param name="action_name" value="$(arg gripper_action_name)" />
+    <param name="dry_run" value="$(arg dry_run)" />
+    <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
+    <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
+  </node>
+
+  <!-- The bridge binary is built in the ROS 2 bridge workspace. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="ros1_bridge_dynamic_bridge.sh"
+        name="ros_bridge"
+        args="--bridge-all-topics"
+        output="screen"
+        respawn="false" />
+</launch>

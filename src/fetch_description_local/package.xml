@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>fetch_description_local</name>
+  <version>0.0.0</version>
+  <description>Local Fetch description</description>
+
+  <maintainer email="a@example.com">a</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
