@@ -6,15 +6,32 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FETCH_WS_ROOT="${FETCH_WS_ROOT:-$REPO_ROOT}"
 
-# Runtime ROS network settings. Values supplied by the host environment take
-# precedence; these defaults match the current Fetch network.
-FETCH_ROS_MASTER_URI="${ROS_MASTER_URI:-http://192.168.50.130:11311}"
-FETCH_ROS_IP="${ROS_IP:-192.168.50.59}"
+# Runtime ROS network settings. These must be supplied by the host.
+FETCH_ROS_MASTER_URI="${ROS_MASTER_URI:-}"
+FETCH_ROS_IP="${ROS_IP:-}"
+if [ -z "$FETCH_ROS_MASTER_URI" ]; then
+    echo "ERROR: ROS_MASTER_URI is not set. Export it before make noetic.create."
+    exit 1
+fi
+if [ -z "$FETCH_ROS_IP" ]; then
+    echo "ERROR: ROS_IP is not set. Run 'ip a', then export it before make noetic.create."
+    exit 1
+fi
+
+FETCH_ROBOT_HOSTNAME="${FETCH_ROBOT_HOSTNAME:-fetch25}"
+FETCH_ROBOT_IP="${FETCH_ROBOT_IP:-${FETCH_ROS_MASTER_URI#*://}}"
+FETCH_ROBOT_IP="${FETCH_ROBOT_IP%%/*}"
+FETCH_ROBOT_IP="${FETCH_ROBOT_IP%%:*}"
+if [[ ! "$FETCH_ROBOT_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    echo "ERROR: Could not extract a Fetch IP from ROS_MASTER_URI."
+    echo "Set FETCH_ROBOT_IP explicitly before make noetic.create."
+    exit 1
+fi
 FETCH_ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
 FETCH_ROS_LOCALHOST_ONLY="${ROS_LOCALHOST_ONLY:-0}"
 FETCH_RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
-FETCH_ROBOT_HOSTNAME="${FETCH_ROBOT_HOSTNAME:-fetch25}"
-FETCH_ROBOT_IP="${FETCH_ROBOT_IP:-192.168.50.130}"
+
+DOCKER_HOST_ARGS="--add-host $FETCH_ROBOT_HOSTNAME:$FETCH_ROBOT_IP"
 
 DOCKER_ROS_ENV_ARGS="--env ROS_MASTER_URI=$FETCH_ROS_MASTER_URI \
     --env ROS_IP=$FETCH_ROS_IP \
@@ -144,7 +161,7 @@ $DOCKER_COMMAND -it -d\
     $DOCKER_ROS_ENV_ARGS \
     --privileged \
     -p 11311:11311 \
-    --add-host "$FETCH_ROBOT_HOSTNAME:$FETCH_ROBOT_IP" \
+    $DOCKER_HOST_ARGS \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /var/run/docker.sock:/var/run/docker.sock \
