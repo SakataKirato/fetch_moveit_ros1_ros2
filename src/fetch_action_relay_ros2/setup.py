@@ -11,7 +11,10 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/launch", ["launch/relay.launch.py"]),
+        (
+            "share/" + package_name + "/launch",
+            ["launch/relay.launch.py", "launch/joy_to_cmd_vel.launch.py"],
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -21,6 +24,7 @@ setup(
         "console_scripts": [
             "fetch_action_relay_ros2 = fetch_action_relay_ros2.relay_node:main",
             "fetch_gripper_relay_ros2 = fetch_action_relay_ros2.gripper_relay_node:main",
+            "fetch_joy_to_cmd_vel = fetch_action_relay_ros2.joy_to_cmd_vel_node:main",
         ],
     },
 )
