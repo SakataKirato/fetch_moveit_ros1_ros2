@@ -136,6 +136,41 @@ source /opt/ros/humble/setup.bash
 source ~/fetch_moveit_ws/install/setup.bash
 ros2 launch fetch_description_config fetch_moveit_bringup.launch.py
 ```
+
+## Controller teleoperation test
+
+Start the ROS 2 joystick driver on the host:
+
+```bash
+source /opt/ros/humble/setup.bash
+ros2 run joy joy_node
+```
+
+In another host terminal, start the simple joystick-to-base converter:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/fetch_moveit_ws/install/setup.bash
+ros2 launch fetch_action_relay_ros2 joy_to_cmd_vel.launch.py \
+  linear_scale:=0.03
+```
+
+Press the controller's PS button first, then operate the lower-left stick.
+The current test is limited to the stick's x-axis only:
+
+```text
+joy.axes[0] → /cmd_vel.linear.x
+```
+
+`linear.y` and `angular.z` are disabled in this test. Verify the generated
+command from another host terminal:
+
+```bash
+source /opt/ros/humble/setup.bash
+ros2 topic echo /cmd_vel
+```
+
+Keep the Fetch emergency stop ready.
 For real hardware execution, stop the dry-run relay and restart it with:
 
 ```bash
