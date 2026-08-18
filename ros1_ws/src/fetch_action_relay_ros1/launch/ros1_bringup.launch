@@ -31,7 +31,6 @@
   <node pkg="fetch_action_relay_ros1"
         type="ros1_bridge_dynamic_bridge.sh"
         name="ros_bridge"
-        args="--bridge-all-topics"
         output="screen"
         respawn="false" />
 </launch>
