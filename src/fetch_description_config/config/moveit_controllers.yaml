@@ -11,6 +11,9 @@ moveit_simple_controller_manager:
   controller_names:
     - arm_controller
     - gripper_controller
+    - head_controller
+    - torso_controller
+    - arm_with_torso_controller
 
   arm_controller:
     type: FollowJointTrajectory
@@ -31,3 +34,26 @@ moveit_simple_controller_manager:
       - l_gripper_finger_joint
       - r_gripper_finger_joint
     parallel: true
+  head_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    joints:
+      - head_pan_joint
+      - head_tilt_joint
+  torso_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    joints:
+      - torso_lift_joint
+  arm_with_torso_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    joints:
+      - torso_lift_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - upperarm_roll_joint
+      - elbow_flex_joint
+      - forearm_roll_joint
+      - wrist_flex_joint
+      - wrist_roll_joint

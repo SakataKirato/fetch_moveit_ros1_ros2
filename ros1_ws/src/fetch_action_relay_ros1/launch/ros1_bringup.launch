@@ -1,6 +1,9 @@
 <launch>
   <arg name="action_name" default="/arm_controller/follow_joint_trajectory" />
   <arg name="gripper_action_name" default="/gripper_controller/gripper_action" />
+  <arg name="head_action_name" default="/head_controller/follow_joint_trajectory" />
+  <arg name="torso_action_name" default="/torso_controller/follow_joint_trajectory" />
+  <arg name="arm_with_torso_action_name" default="/arm_with_torso_controller/follow_joint_trajectory" />
   <arg name="dry_run" default="true" />
   <arg name="server_wait_timeout" default="5.0" />
   <arg name="result_wait_timeout" default="30.0" />
@@ -11,6 +14,22 @@
         name="fetch_action_relay_ros1"
         output="screen">
     <param name="action_name" value="$(arg action_name)" />
+    <param name="dry_run" value="$(arg dry_run)" />
+    <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
+    <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
+  </node>
+
+  <!-- ROS 1 arm-with-torso action client. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="fetch_action_relay_ros1.py"
+        name="fetch_arm_with_torso_action_relay_ros1"
+        output="screen">
+    <param name="action_name" value="$(arg arm_with_torso_action_name)" />
+    <param name="goal_topic" value="/fetch_action_relay/arm_with_torso_goal_trajectory" />
+    <param name="goal_id_topic" value="/fetch_action_relay/arm_with_torso_goal_id" />
+    <param name="cancel_topic" value="/fetch_action_relay/arm_with_torso_cancel" />
+    <param name="result_topic" value="/fetch_action_relay/arm_with_torso_result" />
+    <param name="feedback_topic" value="/fetch_action_relay/arm_with_torso_feedback" />
     <param name="dry_run" value="$(arg dry_run)" />
     <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
     <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
@@ -27,10 +46,43 @@
     <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
   </node>
 
+  <!-- ROS 1 head action client. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="fetch_action_relay_ros1.py"
+        name="fetch_head_action_relay_ros1"
+        output="screen">
+    <param name="action_name" value="$(arg head_action_name)" />
+    <param name="goal_topic" value="/fetch_action_relay/head_goal_trajectory" />
+    <param name="goal_id_topic" value="/fetch_action_relay/head_goal_id" />
+    <param name="cancel_topic" value="/fetch_action_relay/head_cancel" />
+    <param name="result_topic" value="/fetch_action_relay/head_result" />
+    <param name="feedback_topic" value="/fetch_action_relay/head_feedback" />
+    <param name="dry_run" value="$(arg dry_run)" />
+    <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
+    <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
+  </node>
+
+  <!-- ROS 1 torso action client. -->
+  <node pkg="fetch_action_relay_ros1"
+        type="fetch_action_relay_ros1.py"
+        name="fetch_torso_action_relay_ros1"
+        output="screen">
+    <param name="action_name" value="$(arg torso_action_name)" />
+    <param name="goal_topic" value="/fetch_action_relay/torso_goal_trajectory" />
+    <param name="goal_id_topic" value="/fetch_action_relay/torso_goal_id" />
+    <param name="cancel_topic" value="/fetch_action_relay/torso_cancel" />
+    <param name="result_topic" value="/fetch_action_relay/torso_result" />
+    <param name="feedback_topic" value="/fetch_action_relay/torso_feedback" />
+    <param name="dry_run" value="$(arg dry_run)" />
+    <param name="server_wait_timeout" value="$(arg server_wait_timeout)" />
+    <param name="result_wait_timeout" value="$(arg result_wait_timeout)" />
+  </node>
+
   <!-- The bridge binary is built in the ROS 2 bridge workspace. -->
   <node pkg="fetch_action_relay_ros1"
         type="ros1_bridge_dynamic_bridge.sh"
         name="ros_bridge"
+        args="--bridge-all-topics"
         output="screen"
         respawn="false" />
 </launch>
