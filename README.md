@@ -137,23 +137,17 @@ source ~/fetch_moveit_ws/install/setup.bash
 ros2 launch fetch_description_config fetch_moveit_bringup.launch.py
 ```
 
+The default bringup also starts the ROS 2 joystick driver and the
+joystick-to-base teleoperation node. Disable them when needed with:
+
+```bash
+ros2 launch fetch_description_config fetch_moveit_bringup.launch.py teleop:=false
+```
+
 ## Controller teleoperation test
 
-Start the ROS 2 joystick driver on the host:
-
-```bash
-source /opt/ros/humble/setup.bash
-ros2 run joy joy_node
-```
-
-In another host terminal, start the simple joystick-to-base converter:
-
-```bash
-source /opt/ros/humble/setup.bash
-source ~/fetch_moveit_ws/install/setup.bash
-ros2 launch fetch_action_relay_ros2 joy_to_cmd_vel.launch.py \
-  linear_scale:=0.03
-```
+The default bringup starts both teleoperation nodes with
+`teleop_linear_scale:=0.03`.
 
 Press the controller's PS button first, then operate the lower-left stick.
 The current test is limited to the stick's x-axis only:
@@ -176,3 +170,15 @@ For real hardware execution, stop the dry-run relay and restart it with:
 ```bash
 roslaunch fetch_action_relay_ros1 ros1_bringup.launch dry_run:=false
 ```
+
+## Potential Configuration Files
+
+- [`config/joint_limits.yaml`](src/fetch_description_config/config/joint_limits.yaml) — Adjust joint velocity limits and default motion speed and acceleration scaling.
+- [`config/moveit.rviz`](src/fetch_description_config/config/moveit.rviz) — Customize the RViz layout and visualization settings.
+
+## Other Resources
+
+- [Fetch & Freight Research Edition Documentation](https://fetchrobotics.github.io/docs/) — Official documentation for Fetch hardware, ROS setup, APIs, and system operation.
+- [Fetch ROS Repository](https://github.com/fetchrobotics/fetch_ros) — Official ROS packages for the Fetch robot, including robot description, MoveIt configuration, navigation, and teleoperation.
+- [MoveIt 2 Documentation for Humble](https://moveit.picknik.ai/humble/) — Documentation for motion planning, trajectory execution, kinematics, and RViz integration.
+- [ros1_bridge Documentation](https://docs.ros.org/en/humble/p/ros1_bridge/) — Documentation for communication between ROS 1 and ROS 2, including custom message support.

@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -33,6 +34,31 @@ def generate_launch_description():
                 "rviz",
                 default_value="true",
                 description="Start RViz2",
+            ),
+            DeclareLaunchArgument(
+                "teleop",
+                default_value="true",
+                description="Start the joystick driver and base teleoperation node",
+            ),
+            DeclareLaunchArgument(
+                "teleop_linear_scale",
+                default_value="0.03",
+                description="Linear velocity scale for joystick teleoperation",
+            ),
+            Node(
+                package="joy",
+                executable="joy_node",
+                name="joy_node",
+                output="screen",
+                condition=IfCondition(LaunchConfiguration("teleop")),
+            ),
+            _include(
+                "fetch_action_relay_ros2",
+                "joy_to_cmd_vel.launch.py",
+                {
+                    "linear_scale": LaunchConfiguration("teleop_linear_scale"),
+                },
+                condition=IfCondition(LaunchConfiguration("teleop")),
             ),
             _include(
                 "fetch_action_relay_ros2",
