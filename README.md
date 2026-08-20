@@ -46,6 +46,8 @@ make noetic.create
 make noetic.shell
 ```
 
+> The CUDA-enabled Noetic Docker configuration has not been tested.
+
 Use `make noetic.up` when the container already exists but is stopped.
 
 Runtime network settings are handled by `docker/scripts/run.bash`. First check
