@@ -22,6 +22,19 @@ because `ros1_bridge` requires both ROS 1 and ROS 2 libraries.
 - ROS 2 Humble on the host
 - Fetch robot
 
+## Fetch user account setup
+
+Create the user account used for Fetch development and add it to the required
+system groups. Replace `USERNAME` with the intended username:
+
+```bash
+sudo adduser USERNAME
+sudo usermod -G adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare USERNAME
+```
+
+Log out and log back in after changing the group membership so that the new
+group settings take effect.
+
 ## Docker setup
 
 The Docker configuration is included in this repository under `docker/`.
