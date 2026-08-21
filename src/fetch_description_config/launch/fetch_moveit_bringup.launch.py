@@ -3,7 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
+from launch_ros.actions import Node, SetParameter
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -44,6 +44,17 @@ def generate_launch_description():
                 "teleop_linear_scale",
                 default_value="0.03",
                 description="Linear velocity scale for joystick teleoperation",
+            ),
+            DeclareLaunchArgument(
+                "use_sim_time",
+                default_value="false",
+                description=(
+                    "Use the simulated ROS clock from /clock instead of wall time"
+                ),
+            ),
+            SetParameter(
+                name="use_sim_time",
+                value=LaunchConfiguration("use_sim_time"),
             ),
             Node(
                 package="joy",
