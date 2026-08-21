@@ -69,81 +69,6 @@ make noetic.create
 make noetic.shell
 ```
 
-## Gazebo Simulation
-
-### Fetch Gazebo source
-
-Clone the `gazebo11` branch into the existing ROS 1 workspace:
-
-```bash
-cd ~/fetch_moveit_ws/ros1_ws/src
-git clone -b gazebo11 https://github.com/fetchrobotics/fetch_gazebo.git
-```
-
-### Simulation network settings
-
-Gazebo simulation does not require a physical Fetch robot. Use the local
-machine as the ROS 1 master and ROS 1 host:
-
-```bash
-make noetic.shell
-export ROS_MASTER_URI=http://127.0.0.1:11311
-export ROS_IP=127.0.0.1
-```
-
-### Build and run the simulation
-
-Inside the container, install the ROS 1 dependencies and build the required
-packages:
-
-```bash
-source /opt/ros/noetic/setup.bash
-
-cd /workspace
-rosdep update
-rosdep install --from-paths src --ignore-src --rosdistro noetic -r -y
-
-catkin config --extend /opt/ros/noetic
-catkin build fetch_action_relay_ros1 fetch_gazebo
-
-source devel/setup.bash
-```
-
-After the build succeeds, start Gazebo in another terminal in the same
-container:
-
-```bash
-source /workspace/devel/setup.bash
-
-roslaunch fetch_gazebo simulation.launch gui:=false
-```
-
-Then start the ROS 1 action relay and bridge in another container terminal:
-
-```bash
-make noetic.shell
-export ROS_MASTER_URI=http://127.0.0.1:11311
-export ROS_IP=127.0.0.1
-
-source /workspace/devel/setup.bash
-
-roslaunch fetch_action_relay_ros1 ros1_bringup.launch dry_run:=false
-```
-
-Finally, start MoveIt 2 and RViz2 on the host:
-
-```bash
-source /opt/ros/humble/setup.bash
-source ~/fetch_moveit_ws/install/setup.bash
-
-ros2 launch fetch_description_config fetch_moveit_bringup.launch.py \
-  use_sim_time:=true
-```
-
-Use `dry_run:=false` so that goals are sent to the Gazebo controllers. The
-`use_sim_time:=true` option makes ROS 2 use the simulated clock published by
-Gazebo.
-
 ## First-time workspace setup
 
 Run the following inside the container. The ROS 2 Humble and
@@ -261,6 +186,80 @@ For real hardware execution, stop the dry-run relay and restart it with:
 ```bash
 roslaunch fetch_action_relay_ros1 ros1_bringup.launch dry_run:=false
 ```
+## Gazebo Simulation
+
+### Fetch Gazebo source
+
+Clone the `gazebo11` branch into the existing ROS 1 workspace:
+
+```bash
+cd ~/fetch_moveit_ws/ros1_ws/src
+git clone -b gazebo11 https://github.com/fetchrobotics/fetch_gazebo.git
+```
+
+### Simulation network settings
+
+Gazebo simulation does not require a physical Fetch robot. Use the local
+machine as the ROS 1 master and ROS 1 host:
+
+```bash
+make noetic.shell
+export ROS_MASTER_URI=http://127.0.0.1:11311
+export ROS_IP=127.0.0.1
+```
+
+### Build and run the simulation
+
+Inside the container, install the ROS 1 dependencies and build the required
+packages:
+
+```bash
+source /opt/ros/noetic/setup.bash
+
+cd /workspace
+rosdep update
+rosdep install --from-paths src --ignore-src --rosdistro noetic -r -y
+
+catkin config --extend /opt/ros/noetic
+catkin build fetch_action_relay_ros1 fetch_gazebo
+
+source devel/setup.bash
+```
+
+After the build succeeds, start Gazebo in another terminal in the same
+container:
+
+```bash
+source /workspace/devel/setup.bash
+
+roslaunch fetch_gazebo simulation.launch gui:=false
+```
+
+Then start the ROS 1 action relay and bridge in another container terminal:
+
+```bash
+make noetic.shell
+export ROS_MASTER_URI=http://127.0.0.1:11311
+export ROS_IP=127.0.0.1
+
+source /workspace/devel/setup.bash
+
+roslaunch fetch_action_relay_ros1 ros1_bringup.launch dry_run:=false
+```
+
+Finally, start MoveIt 2 and RViz2 on the host:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/fetch_moveit_ws/install/setup.bash
+
+ros2 launch fetch_description_config fetch_moveit_bringup.launch.py \
+  use_sim_time:=true
+```
+
+Use `dry_run:=false` so that goals are sent to the Gazebo controllers. The
+`use_sim_time:=true` option makes ROS 2 use the simulated clock published by
+Gazebo.
 
 ## Potential Configuration Files
 
